@@ -1,14 +1,13 @@
 # Amazon Product Analytics
 
-A data-cleaning and exploratory analytics project using an Amazon product listings and ratings dataset. The project converts inconsistent source fields into analysis-ready columns for product, pricing, discount, and rating analysis.
+A Python data-cleaning and exploratory analytics project that transforms Amazon product listings into an analysis-ready dataset for studying prices, discounts, ratings, and categories. The cleaned CSV can be used with Power BI, Excel, SQL, or Python.
 
 ## Project goals
-- Prepare product prices, discounts, ratings, and rating counts for analysis.
-- Standardise category hierarchy into `main_category`, `subcategory`, and a readable category path.
-- Produce a clean CSV suitable for Power BI, Excel, SQL, or Python analysis.
-- Document data-quality decisions so the work is reproducible.
+- Standardise product prices, discounts, ratings, rating counts, and category fields.
+- Provide a reproducible Python cleaning workflow.
+- Document data-quality decisions and limitations.
 
-## Repository structure
+## Repository contents
 ```text
 amazon-product-analytics/
 ├── README.md
@@ -16,35 +15,28 @@ amazon-product-analytics/
 ├── clean_data.py
 ├── cleaned_amazon_products.csv
 ├── data_quality_report.md
-├── .gitignore
-└── LICENSE
+└── .gitignore
 ```
 
 ## Dataset
-The supplied source contains 1,465 rows and 16 columns. The cleaned output contains 1,465 rows and 13 columns.
-
-The cleaned file is `cleaned_amazon_products.csv`.
+The source dataset contains 1,465 rows and 16 columns. The cleaned output contains 1,465 rows and 13 columns and is available as `cleaned_amazon_products.csv`.
 
 ### Cleaning performed
-1. Trimmed leading and trailing whitespace from text fields.
-2. Converted rupee-formatted prices into numeric INR columns.
-3. Converted discount percentages into numeric values (for example, `64%` becomes `64`).
-4. Converted ratings and rating counts into numeric fields.
-5. Converted the invalid rating value `|` into a missing value rather than guessing a rating.
-6. Converted Indian-style comma-separated rating counts into integers.
-7. Split the category hierarchy into `main_category`, `subcategory`, and `category_path`.
-8. Removed reviewer identifiers and free-text review fields (`user_id`, `user_name`, `review_id`, `review_title`, `review_content`) from the public portfolio output.
-9. Removed exact duplicate rows. No exact duplicate rows were found.
+- Trimmed whitespace from text fields.
+- Converted rupee-formatted prices to numeric INR values and discount percentages to numeric values.
+- Converted ratings and rating counts to numeric fields, including Indian-style comma-separated counts.
+- Replaced one invalid rating (`|`) with a missing value instead of guessing.
+- Split the category hierarchy into `main_category`, `subcategory`, and `category_path`.
+- Excluded reviewer identifiers and free-text review fields from the portfolio output.
+- Checked for exact duplicate rows; none were found.
 
-### Important data-quality note
-There are 1,351 unique `product_id` values across 1,465 rows. Repeated product IDs were retained because the source may contain multiple listing or variant records; they should be investigated before any product-level aggregation. Do not assume every row is a unique product.
+## Data quality and limitations
+- There are 1,351 unique `product_id` values among 1,465 rows. Repeated IDs were retained because they may represent variants or repeated listings. Validate the dataset grain before calculating distinct-product metrics.
+- Two rating-count values are missing, and one invalid rating was converted to missing. Missing values are left blank rather than fabricated.
+- See [`data_quality_report.md`](data_quality_report.md) for additional details.
 
-Two rating-count values are missing. One invalid rating value was converted to missing. Missing values are left blank rather than fabricated.
-
-## Run the cleaning script
-The original source CSV is not redistributed in this repository. To reproduce the cleaning:
-1. Place your original source file in the project root (for example, `amazon.csv`).
-2. Install dependencies and run the script:
+## Reproduce the cleaning
+The original source CSV is not included. To run the script, provide your own source file (for example, `amazon.csv`) in the repository root:
 
 ```bash
 pip install -r requirements.txt
@@ -53,15 +45,17 @@ python clean_data.py --input amazon.csv
 
 The script writes `cleaned_amazon_products.csv`.
 
-## Suggested analysis questions
-- Which main categories have the highest average ratings?
-- Which categories offer the largest average discounts?
-- Is there a relationship between discount percentage and rating?
-- Which products have the highest rating counts?
-- How do discounted prices vary across categories?
+## Suggested analysis
+- Compare average ratings and discounts across categories.
+- Explore the relationship between discount percentage and rating.
+- Review discounted-price distributions and products with high rating counts.
 
-## Tools
-Python, pandas, and CSV; the cleaned dataset can also be imported into Power BI or Excel.
+## Dashboard preview
+Add a real dashboard screenshot at `assets/dashboard-preview.png` and uncomment or add the image reference below when the preview is available:
 
-## Data and attribution
-This repository contains a transformed copy of the dataset supplied for this project. Before public redistribution, confirm the original dataset's licence and attribution requirements. Product links and image links are retained as source references; this project is not affiliated with Amazon.
+<!-- ![Amazon Product Analytics dashboard preview](assets/dashboard-preview.png) -->
+
+## Data, attribution, and public release
+This repository contains a transformed copy of a supplied dataset. Before making the repository public or redistributing the cleaned CSV, confirm that the original dataset's licence permits redistribution and meet any attribution requirements. Product links and image links are retained as source references. This project is not affiliated with Amazon.
+
+No project license file is currently included. Add a license only after confirming you have the rights to license all material it would cover; a software license does not grant rights to the underlying dataset.
