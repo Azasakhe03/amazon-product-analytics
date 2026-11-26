@@ -194,12 +194,8 @@ def main():
         "- top_products.csv",
         "",
         "---",
-        "",
-        "**Prepared by AG Smart Analytics (Pty) Ltd**",
-        "*Turning Data Into Decisions*",
-    ])
-        ""
-    ])
+            for rating, count in rating_distribution.items():
+        report.append(f"- {rating} stars: {count:,} listings")
 
     for rating, count in rating_distribution.items():
         report.append(
