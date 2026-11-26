@@ -1,6 +1,11 @@
 
 from pathlib import Path
 import pandas as pd
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
 
 # AG Smart Analytics
 # Amazon Product Analytics
@@ -16,13 +21,11 @@ REPORT_DIR.mkdir(exist_ok=True)
 def main():
     print("Starting Amazon Product Analytics...")
 
-    # Check that the dataset exists
     if not DATA_FILE.exists():
         raise FileNotFoundError(
             f"Dataset not found: {DATA_FILE}"
         )
 
-    # Load dataset
     df = pd.read_csv(DATA_FILE)
 
     required_columns = [
@@ -36,17 +39,17 @@ def main():
         "rating_count",
     ]
 
-    missing_columns = [
+    missing = [
         col for col in required_columns
         if col not in df.columns
     ]
 
-    if missing_columns:
+    if missing:
         raise ValueError(
-            f"Missing required columns: {missing_columns}"
+            f"Missing required columns: {missing}"
         )
 
-    # Clean numeric columns
+    # Convert numeric fields
     numeric_columns = [
         "discounted_price_inr",
         "actual_price_inr",
@@ -66,8 +69,7 @@ def main():
         )
 
     df["main_category"] = (
-        df["main_category"]
-        .fillna("Uncategorised")
+        df["main_category"].fillna("Uncategorised")
     )
 
     # Dataset overview
@@ -132,12 +134,12 @@ def main():
     insights = []
 
     if not category_summary.empty:
-        largest_category = category_summary.iloc[0]
+        largest = category_summary.iloc[0]
 
         insights.append(
             f"Largest listing category: "
-            f"{largest_category['main_category']} "
-            f"({int(largest_category['listings'])} listings)."
+            f"{largest['main_category']} "
+            f"({int(largest['listings'])} listings)."
         )
 
     rated_categories = category_summary.dropna(
@@ -145,15 +147,14 @@ def main():
     )
 
     if not rated_categories.empty:
-        best_category = rated_categories.sort_values(
-            "average_rating",
-            ascending=False,
+        best = rated_categories.sort_values(
+            "average_rating", ascending=False
         ).iloc[0]
 
         insights.append(
             f"Highest average-rated category: "
-            f"{best_category['main_category']} "
-            f"({best_category['average_rating']:.2f}/5)."
+            f"{best['main_category']} "
+            f"({best['average_rating']:.2f}/5)."
         )
 
     if pd.notna(average_discount):
@@ -175,14 +176,79 @@ def main():
 
     # Rating distribution
     rating_distribution = (
-        df["rating"]
-        .dropna()
+        df["rating"].dropna()
         .round(1)
         .value_counts()
         .sort_index()
     )
 
-    # Build professional report
+    # CHART 1: Category performance
+    plt.figure(figsize=(11, 6))
+
+    chart_data = category_summary.sort_values(
+        "listings", ascending=True
+    )
+
+    plt.barh(
+        chart_data["main_category"],
+        chart_data["listings"],
+    )
+
+    plt.title("Amazon Listings by Category")
+    plt.xlabel("Number of Listings")
+    plt.ylabel("Product Category")
+    plt.tight_layout()
+
+    plt.savefig(
+        REPORT_DIR / "category_performance.png",
+        dpi=200,
+    )
+    plt.close()
+
+    # CHART 2: Customer rating distribution
+    plt.figure(figsize=(10, 6))
+
+    plt.bar(
+        rating_distribution.index.astype(str),
+        rating_distribution.values,
+    )
+
+    plt.title("Amazon Customer Rating Distribution")
+    plt.xlabel("Customer Rating")
+    plt.ylabel("Number of Listings")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    plt.savefig(
+        REPORT_DIR / "rating_distribution.png",
+        dpi=200,
+    )
+    plt.close()
+
+    # CHART 3: Average discount by category
+    discount_data = category_summary.dropna(
+        subset=["average_discount"]
+    ).sort_values("average_discount", ascending=True)
+
+    plt.figure(figsize=(11, 6))
+
+    plt.barh(
+        discount_data["main_category"],
+        discount_data["average_discount"],
+    )
+
+    plt.title("Average Discount by Category")
+    plt.xlabel("Average Discount (%)")
+    plt.ylabel("Product Category")
+    plt.tight_layout()
+
+    plt.savefig(
+        REPORT_DIR / "discount_analysis.png",
+        dpi=200,
+    )
+    plt.close()
+
+    # Build analytics report
     report = [
         "# AG SMART ANALYTICS",
         "## Amazon Product Analytics Report",
@@ -203,9 +269,7 @@ def main():
         "### 2. Business Insights",
     ]
 
-    report.extend([
-        f"- {item}" for item in insights
-    ])
+    report.extend([f"- {item}" for item in insights])
 
     report.extend([
         "",
@@ -222,6 +286,9 @@ def main():
         "### 4. Generated Files",
         "- category_summary.csv",
         "- top_products.csv",
+        "- category_performance.png",
+        "- rating_distribution.png",
+        "- discount_analysis.png",
         "",
         "---",
         "",
@@ -229,7 +296,6 @@ def main():
         "*Turning Data Into Decisions*",
     ])
 
-    # Save report
     report_path = REPORT_DIR / "analysis_report.md"
 
     report_path.write_text(
@@ -240,8 +306,9 @@ def main():
     print("\nAnalytics completed successfully!")
     print(f"Listings analysed: {total_rows:,}")
     print(f"Unique products: {unique_products:,}")
+    print("Three charts generated successfully.")
     print(f"Report saved to: {report_path}")
 
 
 if __name__ == "__main__":
-    main() 
+    main()
