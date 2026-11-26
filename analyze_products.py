@@ -158,26 +158,46 @@ def main():
         else "Estimated savings unavailable."
     )
 
-    # Build report
+        # Build report
     report = [
-        "# AG Smart Analytics",
+        "# AG SMART ANALYTICS",
         "## Amazon Product Analytics Report",
         "",
-        "### Dataset Overview",
-        f"- Total listings: {total_rows:,}",
-        f"- Unique product IDs: {unique_products:,}",
-        f"- Average rating: {average_rating:.2f}/5"
-        if pd.notna(average_rating)
-        else "- Average rating: unavailable",
+        "**Turning Data Into Decisions**",
         "",
-        "### Business Insights"
+        "---",
+        "",
+        "### 1. Dataset Overview",
+        f"- Total listings analysed: {total_rows:,}",
+        f"- Unique product IDs: {unique_products:,}",
+        f"- Average customer rating: {average_rating:.2f}/5"
+        if pd.notna(average_rating)
+        else "- Average customer rating: unavailable",
+        "",
+        "### 2. Business Insights",
     ]
 
     report.extend([f"- {item}" for item in insights])
 
     report.extend([
         "",
-        "### Rating Distribution",
+        "### 3. Rating Distribution",
+    ])
+
+    for rating, count in rating_distribution.items():
+        report.append(f"- {rating} stars: {count:,} listings")
+
+    report.extend([
+        "",
+        "### 4. Generated Files",
+        "- category_summary.csv",
+        "- top_products.csv",
+        "",
+        "---",
+        "",
+        "**Prepared by AG Smart Analytics (Pty) Ltd**",
+        "*Turning Data Into Decisions*",
+    ])
         ""
     ])
 
